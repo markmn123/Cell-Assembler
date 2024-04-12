@@ -4,6 +4,7 @@ Python script to logically arrange Lithium cells in a semi-optimized format (mus
 I have been building lithium battery packs for some time now and have never enjoyed the daunting task of arranging the cells in an orderly fashion so that all series cells are matched and so...the idea for this tool was born.
 
 What it does:
+
 Takes all the cell capacities you wrote down and arranges them in battery packs as efficiently as possible (its not perfect but its not bad either!!)
 There are literally no limitations to cell configurations so long as you have that many cells in the capacities.txt file (Ex. 5s20p, 100s4p)
 You can select to output to the terminal or save to an Excel file for further arragnement.
