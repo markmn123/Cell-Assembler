@@ -1,5 +1,5 @@
 # Cell-Assembler
-Python script to logically arrange Lithium cells in a semi-optimized format (must stress semi-organized)
+Python script to logically arrange Lithium cells in a semi-optimized format (must stress semi-optimized)
 
 I have been building lithium battery packs for some time now and have never enjoyed the daunting task of arranging the cells in an orderly fashion so that all series cells are matched and so...the idea for this tool was born.
 
