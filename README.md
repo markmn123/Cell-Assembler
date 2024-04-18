@@ -18,7 +18,7 @@ What it does:
 Takes all the cell capacities you wrote down and arranges them in battery packs as efficiently as possible (its not perfect but its not bad either!!)
 There are literally no limitations to cell configurations so long as you have that many cells in the capacities.txt file (Ex. 5s20p, 100s4p)
 
-You can select to output to the terminal or save to an Excel file for further arragnement.
+You can select to output to the terminal or save to an Excel file for further arrangement.
 
 It gives some info along with it such as total pack capacity, max capacity difference in % between largest and smallest series cell, cut off, nominal, and fully charged voltage. (Lion and LiFePo4 but can add more chemistries if needed)
 
