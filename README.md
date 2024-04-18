@@ -1,4 +1,14 @@
 # Cell-Assembler
+**V1.1 Update***
+1. Script actually adds the formulas for the following:
+	- SUM for all parallel cells in each series
+	- AVG formula for all series cells
+	- Max series cell difference formula as a percent
+2. Added round function to calculated values to stop long ugly numbers appearing
+3. Added LTO battery chemistry
+With the formulas written to the sheet you can now sort the columns or even move cells around to cut down on the max series cell difference.
+INTERESTING NOTE: After you choose "Yes" when asked if you would like to make another pack at the end, any cells that were used will not be made available for future packs even if you elect not to delte them from capacities.txt.
+
 Python script to logically arrange Lithium cells in a semi-optimized format (must stress semi-optimized)
 
 I have been building lithium battery packs for some time now and have never enjoyed the daunting task of arranging the cells in an orderly fashion so that all series cells are matched and so...the idea for this tool was born.
