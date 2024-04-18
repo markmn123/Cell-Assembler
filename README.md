@@ -9,7 +9,7 @@
 With the formulas written to the sheet you can now sort the columns or even move cells around to cut down on the max series cell difference.
 INTERESTING NOTE: After you choose "Yes" when asked if you would like to make another pack at the end, any cells that were used will not be made available for future packs even if you elect not to delte them from capacities.txt.
 
-Python script to logically arrange Lithium cells in a semi-optimized format (must stress semi-optimized)
+Python script and .EXE (available in the release section) to logically arrange Lithium cells in a semi-optimized format (must stress semi-optimized)
 
 I have been building lithium battery packs for some time now and have never enjoyed the daunting task of arranging the cells in an orderly fashion so that all series cells are matched and so...the idea for this tool was born.
 
