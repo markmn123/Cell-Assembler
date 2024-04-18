@@ -1,6 +1,9 @@
 import pandas as pd
 import os
 import sys
+import openpyxl
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl import Workbook
 
 def read_capacities(file_name):
     with open(file_name, 'r') as file:
@@ -37,13 +40,17 @@ def calculate_voltages(num_series, chemistry):
         cutoff_voltage_base = 2
         nominal_voltage_base = 3.2
         fully_charged_voltage_base = 3.6
+    elif chemistry.lower() == 'lto':
+        cutoff_voltage_base = 1.5
+        nominal_voltage_base = 2.3
+        fully_charged_voltage_base = 2.8    
     else:
         print("Invalid battery chemistry.")
         return None, None, None
 
-    cutoff_voltage = cutoff_voltage_base * num_series
-    nominal_voltage = nominal_voltage_base * num_series
-    fully_charged_voltage = fully_charged_voltage_base * num_series
+    cutoff_voltage = round(cutoff_voltage_base * num_series, 2)
+    nominal_voltage = round(nominal_voltage_base * num_series, 2)
+    fully_charged_voltage = round(fully_charged_voltage_base * num_series, 2)
 
     return cutoff_voltage_base, cutoff_voltage, nominal_voltage_base, nominal_voltage, fully_charged_voltage_base, fully_charged_voltage
 
@@ -69,8 +76,8 @@ def main():
         num_parallel = get_integer_input("Enter the number of parallel cells: ")
         
         battery_chemistry = ""
-        while battery_chemistry.lower() not in ['lion', 'lifepo4']:
-            battery_chemistry = input("Enter the battery chemistry (Lion/LiFePo4): ")
+        while battery_chemistry.lower() not in ['lion', 'lifepo4', 'lto']:
+            battery_chemistry = input("Enter the battery chemistry (Lion/LiFePo4/LTO): ")
         
         num_packs = get_integer_input("Enter the number of packs needed: ")
         
@@ -107,12 +114,12 @@ def main():
                     total_pack_capacity += total_series_capacity
                     series_capacities.append(total_series_capacity)
                     if output_option.lower() == 'terminal':
-                        print(f"Series {i}: {series}, Total Series Capacity: {total_series_capacity}mAh")
+                        print(f"Series {i}: {series}, Total Series Capacity: {total_series_capacity}")
                 
                 total_pack_capacity = round(total_pack_capacity / num_series, 2)
                 max_series_cell_diff = round((max(series_capacities) - min(series_capacities)) / max(series_capacities) * 100, 2)
                 if max_series_cell_diff > 5:
-                    print("Warning: The percent difference between the highest and lowest capacity series cell is over 5%.")
+                    print("Warning: The percent difference between the highest and lowest capacity series cell is over 5%. Assemble with caution!")
                 cutoff_voltage_base, cutoff_voltage, nominal_voltage_base, nominal_voltage, fully_charged_voltage_base, fully_charged_voltage = calculate_voltages(num_series, battery_chemistry)
                 if output_option.lower() == 'terminal':
                     print(f"Total Pack Capacity: {total_pack_capacity}mAh, Max series cell difference: {max_series_cell_diff}%")
@@ -120,13 +127,39 @@ def main():
                     print(f"Nominal Voltage ({nominal_voltage_base}): {nominal_voltage}V")
                     print(f"Fully Charged Voltage ({fully_charged_voltage_base}): {fully_charged_voltage}V")
                 elif output_option.lower() == 'excel':
-                    df = pd.DataFrame(battery_pack, columns=[f'Parallel Cell {i+1}' for i in range(num_parallel)], index=[f'Series {i+1}' for i in range(num_series)])
-                    df['Total Series Capacity'] = [f'{capacity}mAh' for capacity in series_capacities]
-                    df.loc['Total Pack Capacity'] = ['' for _ in range(num_parallel)] + [f"{total_pack_capacity}mAh, Max series cell difference: {max_series_cell_diff}%"]
-                    df.loc['Cut Off Voltage'] = ['' for _ in range(num_parallel)] + [f"({cutoff_voltage_base}) {cutoff_voltage}V"]
-                    df.loc['Nominal Voltage'] = ['' for _ in range(num_parallel)] + [f"({nominal_voltage_base}) {nominal_voltage}V"]
-                    df.loc['Fully Charged Voltage'] = ['' for _ in range(num_parallel)] + [f"({fully_charged_voltage_base}) {fully_charged_voltage}V"]
+                    
+                    # Create an empty DataFrame with the correct structure
+                    df = pd.DataFrame(index=[f'Series {i+1}' for i in range(num_series)] + ['Total Pack Capacity', 'Max series cell difference (%)', 'Cut Off Voltage', 'Nominal Voltage', 'Fully Charged Voltage'],
+                                      columns=[f'Parallel Cell {i+1}' for i in range(num_parallel)] + ['Total Series Capacity'])
+                    
+                    # Fill the DataFrame with values
+                    for i, series in enumerate(battery_pack, start=1):
+                        for j, cell in enumerate(series, start=1):
+                            df.at[f'Series {i}', f'Parallel Cell {j}'] = cell
+                        df.at[f'Series {i}', 'Total Series Capacity'] = sum(series)
+                    df.at['Total Pack Capacity', 'Total Series Capacity'] = total_pack_capacity
+                    df.at['Max series cell difference (%)', 'Total Series Capacity'] = f"{max_series_cell_diff}%"
+                    df.at['Cut Off Voltage', 'Total Series Capacity'] = f"({cutoff_voltage_base}) {cutoff_voltage}V"
+                    df.at['Nominal Voltage', 'Total Series Capacity'] = f"({nominal_voltage_base}) {nominal_voltage}V"
+                    df.at['Fully Charged Voltage', 'Total Series Capacity'] = f"({fully_charged_voltage_base}) {fully_charged_voltage}V"
+                    # Write the DataFrame to Excel
                     df.to_excel(writer, sheet_name=f'Pack {pack_num}')
+                    
+                    # Open the workbook and get the sheet
+                    wb = writer.book
+                    ws = wb[f'Pack {pack_num}']
+                    
+                    # Add the sum formula for each series
+                    for i in range(2, num_series + 2):
+                        ws.cell(row=i, column=num_parallel + 2, value=f'=SUM(A{i}:{openpyxl.utils.get_column_letter(num_parallel + 1)}{i})')
+                    
+                    # Add the percent difference formula
+                    col_letter = openpyxl.utils.get_column_letter(num_parallel + 2)
+                    ws.cell(row=num_series + 3, column=num_parallel + 2, value=f'=ROUND((MAX({col_letter}2:{col_letter}{num_series + 1}) - MIN({col_letter}2:{col_letter}{num_series + 1})) / MAX({col_letter}2:{col_letter}{num_series + 1}) * 100, 2)')
+                    
+                    # Add the average total series capacity formula
+                    ws.cell(row=num_series + 2, column=num_parallel + 2, value=f'=ROUND(AVERAGE({col_letter}2:{col_letter}{num_series + 1}), 2)')
+                    
                 print("Complete")
             else:
                 print(f"Not enough cells left to create another {num_series}s{num_parallel}p pack!")
