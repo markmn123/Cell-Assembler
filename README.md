@@ -10,7 +10,7 @@ NOTE: There seems to be an issue when saving to an excel file that can be attrib
 3. Added LTO battery chemistry
 
 With the formulas written to the sheet you can now sort the columns or even move cells around to cut down on the max series cell difference.
-INTERESTING NOTE: After you choose "Yes" when asked if you would like to make another pack at the end, any cells that were used will not be made available for future packs even if you elect not to delte them from capacities.txt.
+INTERESTING NOTE: After you choose "Yes" when asked if you would like to make another pack at the end, any cells that were used will not be made available for future packs even if you elect not to delete them from capacities.txt.
 
 Python script and .EXE (available in the release section) to logically arrange Lithium cells in a semi-optimized format (must stress semi-optimized)
 
