@@ -1,4 +1,5 @@
 # Cell-Assembler
+NOTE: There seems to be an issue when saving to an excel file that can be attributed to the installation of excel. If you chose the option to save to excel and it just closes out, you may need to repair the excel installation
 **V1.1 Update***
 1. Script actually adds the formulas for the following:
 	- SUM for all parallel cells in each series
